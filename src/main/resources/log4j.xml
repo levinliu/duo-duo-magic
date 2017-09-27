@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <!-- 输出到控制台 -->
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yy-MM-dd HH:mm:ss,SSS} %-5p %c(%F:%L) ## %m%n"/>
+        </layout>
+    </appender>
+
+    <!-- 输出到文件,并每天产生一个文件 -->
+    <!-- com.candou.log4j.CustomLogAppender为log4j自定义工具类. 原始的为org.apache.log4j.ConsoleFile
+        <appender name="file" class="CustomLogAppender"> -->
+    <appender name="FrameWorkFileAppender" class="org.apache.log4j.FileAppender">
+        <param name="File" value="./logs/webmagic/webmagic-dataspider.log"/>
+        <!--日期的格式 -->
+        <!--> 此处总报错 注释掉 <param name="DatePattern" value="'.'yyyy-MM-dd" /> -->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yy-MM-dd HH:mm:ss,SSS} %-5p %c(%F:%L) ## %m%n"/>
+        </layout>
+    </appender>
+    <appender name="AppFileAppender" class="org.apache.log4j.FileAppender">
+        <param name="File" value="./logs/duoduo_child.log"/>
+        <!--日期的格式 -->
+        <!--> 此处总报错 注释掉 <param name="DatePattern" value="'.'yyyy-MM-dd" /> -->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yy-MM-dd HH:mm:ss,SSS} %-5p %c(%F:%L) ## %m%n"/>
+        </layout>
+    </appender>
+
+    <logger name="org.apache" additivity="false">
+        <!--info为log日志的级别 -->
+        <level value="debug"/>
+        <appender-ref ref="FrameWorkFileAppender"/>
+        <appender-ref ref="console"/>
+    </logger>
+
+
+    <logger name="org.duoduochild" additivity="false">
+        <!--info为log日志的级别 -->
+        <level value="debug"/>
+        <appender-ref ref="AppFileAppender"/>
+        <appender-ref ref="console"/>
+    </logger>
+
+    <logger name="us.codecraft.webmagic.scheduler.QueueScheduler" additivity="false">
+        <!--info为log日志的级别 -->
+        <level value="debug"/>
+        <appender-ref ref="FrameWorkFileAppender"/>
+        <!--<appender-ref ref="console"/>-->
+    </logger>
+
+    <root>
+        <level value="debug"/>
+        <appender-ref ref="AppFileAppender"/>
+        <appender-ref ref="console"/>
+    </root>
+
+</log4j:configuration>
