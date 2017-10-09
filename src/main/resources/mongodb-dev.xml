@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    <mongoDB>
+        <adminDB>admin</adminDB>
+        <dataDB>duoduodb</dataDB>
+        <name>mongodb-dev</name>
+        <bindip>127.0.0.1</bindip>
+        <port>27017</port>
+        <login>duoduo_user</login>
+        <password>mongo654321db</password>
+        <poolOptions>
+            <connectionsPerHost>300</connectionsPerHost>
+            <connectTimeout>3000</connectTimeout>
+            <maxWaitTime>5000</maxWaitTime>
+            <!--  no limit on socket connection timeout -->
+            <socketTimeout>0</socketTimeout>
+            <!-- set the thread pool number with proper number, it will throw 'Out of semaphores to get db' exception -->
+            <threadsAllowedToBlockForConnectionMultiplier>5000</threadsAllowedToBlockForConnectionMultiplier>
+        </poolOptions>
+    </mongoDB>
+</config>

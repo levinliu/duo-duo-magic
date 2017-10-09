@@ -36,6 +36,12 @@
         <appender-ref ref="console"/>
     </logger>
 
+    <logger name="org.mongodb" additivity="false">
+        <!--info为log日志的级别 -->
+        <level value="debug"/>
+        <appender-ref ref="AppFileAppender"/>
+        <appender-ref ref="console"/>
+    </logger>
 
     <logger name="org.duoduochild" additivity="false">
         <!--info为log日志的级别 -->
