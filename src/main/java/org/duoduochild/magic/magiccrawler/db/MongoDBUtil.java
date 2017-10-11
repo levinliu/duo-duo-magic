@@ -1,4 +1,4 @@
-package org.duoduochild.magic.magiccrawler.dao;
+package org.duoduochild.magic.magiccrawler.db;
 
 import com.mongodb.*;
 import com.mongodb.client.FindIterable;

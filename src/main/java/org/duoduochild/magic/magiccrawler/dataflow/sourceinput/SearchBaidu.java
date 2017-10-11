@@ -1,17 +1,12 @@
 package org.duoduochild.magic.magiccrawler.dataflow.sourceinput;
 
-import com.mongodb.client.MongoCollection;
-import com.sun.javadoc.Doc;
 import org.apache.log4j.Logger;
 import org.bson.Document;
-import org.duoduochild.magic.magiccrawler.Result;
-import org.duoduochild.magic.magiccrawler.dao.MongoDBSupport;
-import org.duoduochild.magic.magiccrawler.dao.MongoDBUtil;
+import org.duoduochild.magic.magiccrawler.db.MongoDBSupport;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.LinkedList;

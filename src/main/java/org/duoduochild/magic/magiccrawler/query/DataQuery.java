@@ -2,7 +2,7 @@ package org.duoduochild.magic.magiccrawler.query;
 
 import com.mongodb.client.FindIterable;
 import org.bson.Document;
-import org.duoduochild.magic.magiccrawler.dao.MongoDBUtil;
+import org.duoduochild.magic.magiccrawler.db.MongoDBUtil;
 
 /**
  * Created by levinliu on 2017/10/8

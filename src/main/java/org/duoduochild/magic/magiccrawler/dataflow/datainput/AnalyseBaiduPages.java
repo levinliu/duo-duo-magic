@@ -8,7 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.assertj.core.api.Assertions;
 import org.bson.Document;
-import org.duoduochild.magic.magiccrawler.dao.MongoDBUtil;
+import org.duoduochild.magic.magiccrawler.db.MongoDBUtil;
 import org.duoduochild.magic.magiccrawler.dataflow.datainput.model.Type;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;

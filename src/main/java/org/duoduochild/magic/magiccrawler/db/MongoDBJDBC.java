@@ -1,12 +1,10 @@
-package org.duoduochild.magic.magiccrawler.dao;
+package org.duoduochild.magic.magiccrawler.db;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.sun.javadoc.Doc;
 import org.apache.log4j.Logger;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;

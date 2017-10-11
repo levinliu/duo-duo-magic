@@ -1,6 +1,5 @@
-package org.duoduochild.magic.magiccrawler.dao;
+package org.duoduochild.magic.magiccrawler.db;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.util.Asserts;
 import org.bson.Document;
 

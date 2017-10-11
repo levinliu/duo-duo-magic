@@ -1,10 +1,8 @@
 package org.duoduochild.magic.magiccrawler.dataflow.datainput.processor;
 
-import com.sun.javadoc.Doc;
 import org.apache.log4j.Logger;
 import org.bson.Document;
-import org.duoduochild.magic.magiccrawler.dao.MongoDBSupport;
-import org.duoduochild.magic.magiccrawler.dao.MongoDBUtil;
+import org.duoduochild.magic.magiccrawler.db.MongoDBSupport;
 import org.duoduochild.magic.magiccrawler.dataflow.datainput.model.Type;
 import org.duoduochild.magic.magiccrawler.util.PrintException;
 import org.openqa.selenium.By;
