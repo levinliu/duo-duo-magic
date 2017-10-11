@@ -12,6 +12,12 @@ import java.util.List;
  * (Change file header on Settings -> Editor -> File and Code Templates)
  */
 public class MongoDBSupport {
+    public static void saveDoc(String collection, Document document) {
+        Asserts.notBlank(collection, "collection");
+        Asserts.notNull(document, "document shouldn't be null");
+        MongoDBUtil.getDB().getCollection(collection).insertOne(document);
+    }
+
     public static void saveDocs(String collection, List<Document> documents) {
         Asserts.notBlank(collection, "collection");
         Asserts.notNull(documents, "documents shouldn't be null");

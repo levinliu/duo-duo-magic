@@ -1,22 +1,22 @@
 package org.duoduochild.magic.magiccrawler.dataflow.datainput;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.MongoCollection;
-import com.sun.javadoc.Doc;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.bson.Document;
-import org.duoduochild.magic.magiccrawler.dao.MongoDBSupport;
 import org.duoduochild.magic.magiccrawler.dao.MongoDBUtil;
+import org.duoduochild.magic.magiccrawler.dataflow.datainput.model.Type;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AnalyseBaiduPages {
     private static final Logger LOGGER = Logger.getLogger(AnalyseBaiduPages.class);
@@ -35,7 +35,7 @@ public class AnalyseBaiduPages {
         try {
             MongoCollection pagesCollection = MongoDBUtil.getDB().getCollection("searchResultPages");
             Document doc = new Document("searchEngine", "baidu");
-            doc.append("$or", Arrays.asList(new Document("isAnalyzed", false), new Document("isAnalyzed", new Document("$exists", false))));
+            doc.append("$or", Arrays.asList(new Document("isAnalyzed", true), new Document("isAnalyzed", new Document("$exists", false))));
             DistinctIterable<String> pageUrls = pagesCollection.distinct("link", doc, String.class);
             int urlNo = 0;
             MongoCollection urlsCollection = MongoDBUtil.getDB().getCollection("processedResultUrls");
@@ -50,11 +50,15 @@ public class AnalyseBaiduPages {
                     if (!valid) LOGGER.debug("Invalid page title=" + d.getTitle());
                     return valid;
                 });
-                List<WebElement> itemBlocks = driver.findElements(By.xpath("//div[@id='content_left']/div"));
-                List<Document> pageItems = new LinkedList<>();
-                for (WebElement block : itemBlocks) {
+                List<WebElement> resultBlocks = driver.findElements(By.xpath("//div[@id='content_left']/div"));
+                List<Document> pageItems = Lists.newArrayList();
+                Map<String, AtomicInteger> patternCounter = Maps.newHashMap();
+                for (WebElement block : resultBlocks) {
                     try {
-                        readBaiduPageItem(block).ifPresent(outDoc -> {
+                        if (block.getText().contains("广告")) {
+                            LOGGER.debug("ad-1111");
+                        }
+                        readBaiduPageItem(block, patternCounter).ifPresent(outDoc -> {
                             LOGGER.debug("collect a doc=" + outDoc);
                             pageItems.add(outDoc);
                         });
@@ -63,6 +67,8 @@ public class AnalyseBaiduPages {
                         throw e;
                     }
                 }
+                LOGGER.debug("stats=" + patternCounter);
+                Assertions.assertThat(pageItems.size()).isGreaterThan(0).isLessThan(resultBlocks.size());
                 saveResult(pagesCollection, urlsCollection, url, pageItems);
                 captureScreen(urlNo, url);
             }
@@ -92,58 +98,40 @@ public class AnalyseBaiduPages {
         pagesCollection.updateOne(condition, update);
     }
 
-    private static Optional<Document> readBaiduPageItem(WebElement block) {
+
+    private static Optional<Document> readBaiduPageItem(WebElement block, Map<String, AtomicInteger> patternCounter) {
         String cssClass = block.getAttribute("class");
-        LOGGER.info("myCssClass=" + cssClass);
-        LOGGER.debug("pageText=" + block.getText());
-        String type = null;
-        if (cssClass.equals("result c-container") || cssClass.contains("c-container")) {
-            type = "content";
-        } else if (cssClass.contains("b_UBCc") || cssClass.contains("txhBDs")) {
-            type = "ad";
+        increasePatternCounter(patternCounter, cssClass);
+        LOGGER.info("cssClass=" + cssClass);
+        LOGGER.info("blockText=" + block.getText().replaceAll("\r\n", "").replaceAll("\n", ""));
+        return ResultEntryProcessorFactory.newProcessor(resolveTypeFromCssClass(block, cssClass)).process(block);
+    }
+
+    private static Type resolveTypeFromCssClass(WebElement block, String cssClass) {
+        Type type = Type.UNKOWN;
+        if (cssClass.equals("result-op c-container xpath-log")) {
+            LOGGER.debug("Baidu image search");
+            type = Type.IMAGE;
+        } else if (cssClass.equals("result c-container") || cssClass.contains("c-container")) {
+            type = Type.PUBLIC;
+            Assertions.assertThat(block.getText()).contains("百度快照");
+        } else if (cssClass.contains("b_UBCc") || cssClass.contains("txhBDs") || cssClass.contains("KRTrBI") || cssClass.contains("WxONMU") || cssClass.contains("GoZxDR")) {
+            type = Type.AD;
+            Assertions.assertThat(block.getText()).contains("广告");
         } else {
-            return Optional.empty();
+            LOGGER.debug("Unknown content type");
         }
-        Document document = new Document("type", type);
-        WebElement title = block.findElement(By.tagName("h3"));
-        LOGGER.info("h3Class=" + title.getAttribute("class"));
-        document.append("title", title.getText());
-        WebElement abstractText = block.findElement(By.xpath("//div[@class='c-abstract']"));
-        document.append("abstract", abstractText.getText());
-        WebElement image = block.findElement(By.xpath("//a[@class='c-img6']/img"));
-        String imageSrc = image.getAttribute("src");
-        String height = image.getAttribute("height");
-        Document imageDoc = new Document();
-        imageDoc.append("imageSrc", imageSrc);
-        imageDoc.append("imageHeight", height);
-        document.append("image", imageDoc);
-        LOGGER.info("image, url=" + imageSrc + ",height=" + height);
-        if (block.getText().contains("广告")) {
-            LOGGER.debug("ad page");
-            List<WebElement> hyperLinks = block.findElements(By.xpath("//div/a"));
-            for (WebElement link : hyperLinks) {
-                String linkCssClass = link.getAttribute("class");
-                if ("D_qEJR".equals(linkCssClass) || "c-showurl".equals(linkCssClass)
-                        || "cyqRMk".equals(linkCssClass)) {
-                    String baiduRefUrl = link.getAttribute("href");
-                    String webOriginUrl = link.getText();
-                    document.append("refUrl", baiduRefUrl);
-                    document.append("webOriginUrl", webOriginUrl);
-                    LOGGER.info("baiduRefUrl=" + baiduRefUrl + ",webOriginUrl=" + webOriginUrl + ", text=" + block.getText().replaceAll("\"", ""));
-                } else {
-                    LOGGER.info("invalid link cssClass=" + link.getAttribute("class"));
-                    LOGGER.info("invalid text=" + link.getText());
-                }
-            }
+        return type;
+    }
+
+    private static void increasePatternCounter(Map<String, AtomicInteger> patternCounter, String cssClass) {
+        AtomicInteger counter = patternCounter.get(cssClass);
+        if (counter != null) {
+            counter.incrementAndGet();
         } else {
-            WebElement hyperLink = block.findElement(By.xpath("//div[@class='f13']/a"));
-            String baiduRefUrl = hyperLink.getAttribute("href");
-            String webOriginUrl = hyperLink.getText();
-            document.append("refUrl", baiduRefUrl);
-            document.append("webOriginUrl", webOriginUrl);
-            LOGGER.info("baiduRefUrl=" + baiduRefUrl + ",webOriginUrl=" + webOriginUrl + ", text=" + block.getText().replaceAll("\"", ""));
+            counter = new AtomicInteger();
         }
-        return Optional.of(document);
+        patternCounter.put(cssClass, counter);
     }
 
 }
