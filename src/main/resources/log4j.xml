@@ -31,7 +31,7 @@
 
     <logger name="org.apache" additivity="false">
         <!--info为log日志的级别 -->
-        <level value="debug"/>
+        <level value="warn"/>
         <appender-ref ref="FrameWorkFileAppender"/>
         <appender-ref ref="console"/>
     </logger>

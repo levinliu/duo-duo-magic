@@ -2,6 +2,7 @@ package org.duoduochild.magic.magiccrawler.dataflow.datainput.processor;
 
 import org.apache.log4j.Logger;
 import org.bson.Document;
+import org.duoduochild.magic.magiccrawler.dataflow.datainput.GuessEduEntityName;
 import org.duoduochild.magic.magiccrawler.db.MongoDBSupport;
 import org.duoduochild.magic.magiccrawler.dataflow.datainput.model.Type;
 import org.duoduochild.magic.magiccrawler.util.PrintException;
@@ -26,6 +27,12 @@ public class PublicResultEntryProcessor implements ResultEntryProcessor {
             document.append("title", title.getText());
             WebElement abstractText = resultEntry.findElement(By.cssSelector("div[class='c-abstract']"));
             document.append("abstract", abstractText.getText());
+            WebElement link = resultEntry.findElement(By.cssSelector("a[class='c-showurl']"));
+            document.append("refLink", link.getText());
+            Optional<String> optionalName = new GuessEduEntityName(title.getText(), abstractText.getText()).guessName();
+            optionalName.ifPresent(n->{
+                document.append("eduEntityName", optionalName.get());
+            });
             WebElement image = resultEntry.findElement(By.xpath("//a[@class='c-img6']/img"));
             String imageSrc = image.getAttribute("src");
             String height = image.getAttribute("height");
